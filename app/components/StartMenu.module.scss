@@ -71,8 +71,12 @@
 
         &>.window {
           display: none;
-          left: calc(100% - var(--spacing-small));
+          left: calc(100% - var(--spacing-large));
           bottom: 0;
+
+          @media screen and (min-width: 768px) {
+            left: calc(100% - var(--spacing-small));
+          }
 
           .startMenuItem {
             font-size: var(--font-size-small);

@@ -66,19 +66,28 @@ const StartMenuDirectory: React.FC<StartMenuDirectoryProps> = ({
 	children,
 	iconSrc,
 	title,
-}) => (
-	<li className={styles.startMenuDirectory}>
-		<div className={styles.startMenuItem}>
-			<div className={styles.iconWrapper}>
-				<img src={iconSrc} alt="" className={styles.icon} />
+}) => {
+	const screenSizeContext = useContext(ScreenSizeContext);
+
+	return (
+		<li className={styles.startMenuDirectory}>
+			<div className={styles.startMenuItem}>
+				<div className={styles.iconWrapper}>
+					<img src={iconSrc} alt="" className={styles.icon} />
+				</div>
+				{title}
 			</div>
-			{title}
-		</div>
-		<div className={styles.window}>
-			<ul className={styles.menuOptions}>{children}</ul>
-		</div>
-	</li>
-);
+			<div
+				className={styles.window}
+				style={{
+					maxWidth: screenSizeContext.width * 0.5,
+				}}
+			>
+				<ul className={styles.menuOptions}>{children}</ul>
+			</div>
+		</li>
+	);
+};
 
 const StartMenu: React.FC = () => {
 	const screenSizeContext = useContext(ScreenSizeContext);
@@ -105,11 +114,11 @@ const StartMenu: React.FC = () => {
 		<div className={styles.startMenu} ref={menuRef}>
 			<nav
 				className={styles.window}
-				aria-hidden={!isOpen}
 				style={{
 					maxWidth: screenSizeContext.width * 0.5,
 					maxHeight: screenSizeContext.height * 0.75,
 				}}
+				aria-hidden={!isOpen}
 			>
 				<h1 className={styles.gradient}>
 					Steven<span className={styles.thin}>Clark</span>
