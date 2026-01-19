@@ -17,6 +17,17 @@
     background: var(--background-gradient-horizontal);
     padding: var(--spacing-xsmall);
     user-select: none;
+    touch-action: none;
+
+    &:focus,
+    &:focus-visible{
+      outline: 2px solid var(--color-white);
+      outline-offset: -2px;
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: none;
+    }
 
     >:last-child {
       margin-left: var(--spacing-xsmall);

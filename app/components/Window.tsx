@@ -8,6 +8,8 @@ import { ROUTES } from '~/constants';
 import { ScreenSizeContext } from '~/context/ScreenSizeContext';
 import styles from './Window.module.scss';
 
+const KEYBOARD_MOVE_STEP = 20;
+
 interface Props {
 	title: string;
 	children?: React.ReactNode;
@@ -25,13 +27,27 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 	const [isDragging, setIsDragging] = useState(false);
 
 	const windowRef = useRef<HTMLElement>(null);
-	const mousePrevPositionRef = useRef<{ x: number; y: number } | null>(null);
+	const pointerPrevPositionRef = useRef<{ x: number; y: number } | null>(null);
 
 	const navigate = useNavigate();
 
-	const handleMouseDown = (e: React.MouseEvent) => {
+	const clampPosition = useCallback(
+		(x: number, y: number) => {
+			if (!windowRef.current) {
+				return { x, y };
+			}
+			const { width, height } = windowRef.current.getBoundingClientRect();
+			return {
+				x: Math.max(0, Math.min(x, screenSizeContext.width - width)),
+				y: Math.max(0, Math.min(y, screenSizeContext.height - height)),
+			};
+		},
+		[screenSizeContext.width, screenSizeContext.height],
+	);
+
+	const handlePointerDown = (e: React.PointerEvent) => {
 		// Ignore any mouse button besides the main (left) mouse button.
-		if (e.button !== 0) {
+		if (e.pointerType === 'mouse' && e.button !== 0) {
 			return;
 		}
 
@@ -40,68 +56,68 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 			return;
 		}
 
-		mousePrevPositionRef.current = { x: e.clientX, y: e.clientY };
+		pointerPrevPositionRef.current = { x: e.clientX, y: e.clientY };
 		setIsDragging(true);
+		(e.target as HTMLElement).setPointerCapture(e.pointerId);
 	};
 
-	const handleMouseMove = useCallback(
-		(e: MouseEvent) => {
-			if (!windowRef.current || !mousePrevPositionRef.current) {
+	const handlePointerMove = useCallback(
+		(e: React.PointerEvent) => {
+			if (!windowRef.current || !pointerPrevPositionRef.current) {
 				return;
 			}
 
-			const { width, height } = windowRef.current.getBoundingClientRect();
-			const deltaX = mousePrevPositionRef.current.x - e.clientX;
-			const deltaY = mousePrevPositionRef.current.y - e.clientY;
+			const deltaX = pointerPrevPositionRef.current.x - e.clientX;
+			const deltaY = pointerPrevPositionRef.current.y - e.clientY;
 
-			setPosition((prev) => {
-				const newX = prev.x - deltaX;
-				const newY = prev.y - deltaY;
+			setPosition((prev) => clampPosition(prev.x - deltaX, prev.y - deltaY));
 
-				return {
-					x: Math.max(0, Math.min(newX, screenSizeContext.width - width)),
-					y: Math.max(0, Math.min(newY, screenSizeContext.height - height)),
-				};
-			});
-
-			mousePrevPositionRef.current = { x: e.clientX, y: e.clientY };
+			pointerPrevPositionRef.current = { x: e.clientX, y: e.clientY };
 		},
-		[screenSizeContext.width, screenSizeContext.height],
+		[clampPosition],
 	);
 
-	const handleMouseUp = useCallback(() => {
-		mousePrevPositionRef.current = null;
+	const handlePointerUp = useCallback((e: React.PointerEvent) => {
+		pointerPrevPositionRef.current = null;
 		setIsDragging(false);
+		(e.target as HTMLElement).releasePointerCapture(e.pointerId);
 	}, []);
 
-	// Add and remove event listeners when dragging and dropping, respectively.
-	useEffect(() => {
-		if (isDragging) {
-			window.addEventListener('mousemove', handleMouseMove);
-			window.addEventListener('mouseup', handleMouseUp);
-		} else {
-			window.removeEventListener('mousemove', handleMouseMove);
-			window.removeEventListener('mouseup', handleMouseUp);
-		}
-
-		return () => {
-			window.removeEventListener('mousemove', handleMouseMove);
-			window.removeEventListener('mouseup', handleMouseUp);
-		};
-	}, [isDragging, handleMouseMove, handleMouseUp]);
-
-	// Ensure that screen resizing does not place the window out of bounds.
-	useEffect(() => {
-		if (!windowRef.current) {
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		const target = e.target as HTMLElement;
+		if (target.closest('button')) {
 			return;
 		}
 
-		const { width, height } = windowRef.current.getBoundingClientRect();
-		setPosition((prev) => ({
-			x: Math.max(0, Math.min(prev.x, screenSizeContext.width - width)),
-			y: Math.max(0, Math.min(prev.y, screenSizeContext.height - height)),
-		}));
-	}, [screenSizeContext.width, screenSizeContext.height]);
+		let deltaX = 0;
+		let deltaY = 0;
+		const step = e.shiftKey ? KEYBOARD_MOVE_STEP * 3 : KEYBOARD_MOVE_STEP;
+
+		switch (e.key) {
+			case 'ArrowUp':
+				deltaY = -step;
+				break;
+			case 'ArrowDown':
+				deltaY = step;
+				break;
+			case 'ArrowLeft':
+				deltaX = -step;
+				break;
+			case 'ArrowRight':
+				deltaX = step;
+				break;
+			default:
+				return;
+		}
+
+		e.preventDefault();
+		setPosition((prev) => clampPosition(prev.x + deltaX, prev.y + deltaY));
+	};
+
+	// Ensure that screen resizing does not place the window out of bounds.
+	useEffect(() => {
+		setPosition((prev) => clampPosition(prev.x, prev.y));
+	}, [clampPosition]);
 
 	return (
 		<section
@@ -112,19 +128,22 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 				top: position.y,
 				left: position.x,
 				cursor: isDragging ? 'grabbing' : 'default',
+				touchAction: 'none',
 			}}
 		>
 			<div
 				className={styles.titleBar}
 				style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-				role="button"
+				role="slider"
+				aria-label={`Move ${title} window. Use arrow keys to reposition.`}
+				aria-valuenow={position.x}
+				aria-valuetext={`Position: ${position.x} pixels from left, ${position.y} pixels from top`}
 				tabIndex={0}
-				onMouseDown={handleMouseDown}
-				onKeyDown={(e) => {
-					if (e.key === 'Enter' || e.key === ' ') {
-						e.preventDefault();
-					}
-				}}
+				onPointerDown={handlePointerDown}
+				onPointerMove={handlePointerMove}
+				onPointerUp={handlePointerUp}
+				onPointerCancel={handlePointerUp}
+				onKeyDown={handleKeyDown}
 			>
 				<h2 className={styles.windowTitle}>{title}</h2>
 				<BezeledButton
