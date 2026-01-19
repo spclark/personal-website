@@ -226,7 +226,6 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 				width: size.width ?? undefined,
 				height: size.height ?? undefined,
 				cursor: isDragging || isResizing ? 'grabbing' : 'default',
-				touchAction: 'none',
 			}}
 		>
 			<div

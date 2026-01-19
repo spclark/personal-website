@@ -8,6 +8,7 @@
   border-style: solid;
   border-color: var(--border-color-bezel-raised-deep);
   padding: var(--spacing-xsmall);
+  touch-action: none;
 
   .titleBar {
     display: flex;
