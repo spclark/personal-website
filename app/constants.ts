@@ -9,6 +9,6 @@ export const ROUTES = {
 	ABOUT: '/about',
 	HOME: '/',
 	NOT_FOUND: '/not-found',
-	PROTEC: '/protec-system-one',
-	TRIPPED_UP: '/tripped-up',
+	PROTEC: '/projects/protec-system-one',
+	TRIPPED_UP: '/projects/tripped-up',
 };

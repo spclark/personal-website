@@ -1,7 +1,7 @@
 import Window from '~/components/Window';
 
-const TrippedUp = () => (
-	<Window title="TrippedUp!">
+const ProTec = () => (
+	<Window title="Pro-Tec System One GPS Tracker">
 		<p>
 			A project that arose from a desire to learn about web APIs. Given two
 			locations and a mode of transport, the site calculates the distance and
@@ -30,4 +30,4 @@ const TrippedUp = () => (
 		</p>
 	</Window>
 );
-export default TrippedUp;
+export default ProTec;
