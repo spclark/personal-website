@@ -19,16 +19,6 @@
     user-select: none;
     touch-action: none;
 
-    &:focus,
-    &:focus-visible{
-      outline: 2px solid var(--color-white);
-      outline-offset: -2px;
-    }
-
-    &:focus:not(:focus-visible) {
-      outline: none;
-    }
-
     >:last-child {
       margin-left: var(--spacing-xsmall);
     }
@@ -48,6 +38,9 @@
   .content {
     font-size: var(--font-size-medium);
     padding: var(--spacing-small);
+    width: 100%;
+    height: 100%;
+    overflow: auto;
 
     &.inset {
       background-color: white;
@@ -59,5 +52,14 @@
     &.solid {
       background-color: var(--background-color-window);
     }
+  }
+
+  .resizeHandle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    touch-action: none;
   }
 }

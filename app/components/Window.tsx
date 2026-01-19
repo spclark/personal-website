@@ -9,6 +9,9 @@ import { ScreenSizeContext } from '~/context/ScreenSizeContext';
 import styles from './Window.module.scss';
 
 const KEYBOARD_MOVE_STEP = 20;
+const KEYBOARD_RESIZE_STEP = 20;
+const MIN_WIDTH = 200;
+const MIN_HEIGHT = 150;
 
 interface Props {
 	title: string;
@@ -23,8 +26,16 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 		x: Math.floor(screenSizeContext.width / 2),
 		y: Math.floor(screenSizeContext.height / 2),
 	});
+	const [size, setSize] = useState<{
+		width: number | null;
+		height: number | null;
+	}>({
+		width: null,
+		height: null,
+	});
 	const [isOpen, setIsOpen] = useState(true);
 	const [isDragging, setIsDragging] = useState(false);
+	const [isResizing, setIsResizing] = useState(false);
 
 	const windowRef = useRef<HTMLElement>(null);
 	const pointerPrevPositionRef = useRef<{ x: number; y: number } | null>(null);
@@ -114,6 +125,91 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 		setPosition((prev) => clampPosition(prev.x + deltaX, prev.y + deltaY));
 	};
 
+	const clampSize = useCallback(
+		(width: number, height: number) => {
+			const maxWidth = screenSizeContext.width - position.x;
+			const maxHeight = screenSizeContext.height - position.y;
+			return {
+				width: Math.max(MIN_WIDTH, Math.min(width, maxWidth)),
+				height: Math.max(MIN_HEIGHT, Math.min(height, maxHeight)),
+			};
+		},
+		[screenSizeContext.width, screenSizeContext.height, position.x, position.y],
+	);
+
+	const handleResizePointerDown = (e: React.PointerEvent) => {
+		if (e.pointerType === 'mouse' && e.button !== 0) {
+			return;
+		}
+
+		pointerPrevPositionRef.current = { x: e.clientX, y: e.clientY };
+		setIsResizing(true);
+		(e.target as HTMLElement).setPointerCapture(e.pointerId);
+	};
+
+	const handleResizePointerMove = useCallback(
+		(e: React.PointerEvent) => {
+			if (!windowRef.current || !pointerPrevPositionRef.current) {
+				return;
+			}
+
+			const deltaX = e.clientX - pointerPrevPositionRef.current.x;
+			const deltaY = e.clientY - pointerPrevPositionRef.current.y;
+
+			setSize((prev) => {
+				const rect = windowRef.current?.getBoundingClientRect();
+				const currentWidth = prev.width ?? rect?.width ?? MIN_WIDTH;
+				const currentHeight = prev.height ?? rect?.height ?? MIN_HEIGHT;
+				return clampSize(currentWidth + deltaX, currentHeight + deltaY);
+			});
+
+			pointerPrevPositionRef.current = { x: e.clientX, y: e.clientY };
+		},
+		[clampSize],
+	);
+
+	const handleResizePointerUp = useCallback((e: React.PointerEvent) => {
+		pointerPrevPositionRef.current = null;
+		setIsResizing(false);
+		(e.target as HTMLElement).releasePointerCapture(e.pointerId);
+	}, []);
+
+	const handleResizeKeyDown = (e: React.KeyboardEvent) => {
+		let deltaWidth = 0;
+		let deltaHeight = 0;
+		const step = e.shiftKey ? KEYBOARD_RESIZE_STEP * 3 : KEYBOARD_RESIZE_STEP;
+
+		switch (e.key) {
+			case 'ArrowUp':
+				deltaHeight = -step;
+				break;
+			case 'ArrowDown':
+				deltaHeight = step;
+				break;
+			case 'ArrowLeft':
+				deltaWidth = -step;
+				break;
+			case 'ArrowRight':
+				deltaWidth = step;
+				break;
+			default:
+				return;
+		}
+
+		e.preventDefault();
+		setSize((prev) => {
+			const currentWidth =
+				prev.width ??
+				windowRef.current?.getBoundingClientRect().width ??
+				MIN_WIDTH;
+			const currentHeight =
+				prev.height ??
+				windowRef.current?.getBoundingClientRect().height ??
+				MIN_HEIGHT;
+			return clampSize(currentWidth + deltaWidth, currentHeight + deltaHeight);
+		});
+	};
+
 	// Ensure that screen resizing does not place the window out of bounds.
 	useEffect(() => {
 		setPosition((prev) => clampPosition(prev.x, prev.y));
@@ -127,7 +223,9 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 			style={{
 				top: position.y,
 				left: position.x,
-				cursor: isDragging ? 'grabbing' : 'default',
+				width: size.width ?? undefined,
+				height: size.height ?? undefined,
+				cursor: isDragging || isResizing ? 'grabbing' : 'default',
 				touchAction: 'none',
 			}}
 		>
@@ -164,6 +262,20 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 				</BezeledButton>
 			</div>
 			<div className={`${styles.content} ${styles[fill]}`}>{children}</div>
+			<div
+				className={styles.resizeHandle}
+				role="slider"
+				aria-label={`Resize ${title} window. Use arrow keys to adjust size.`}
+				aria-valuenow={size.width ?? 0}
+				aria-valuetext={`Size: ${size.width ?? 'auto'} pixels wide, ${size.height ?? 'auto'} pixels tall`}
+				tabIndex={0}
+				style={{ cursor: isResizing ? 'grabbing' : 'nwse-resize' }}
+				onPointerDown={handleResizePointerDown}
+				onPointerMove={handleResizePointerMove}
+				onPointerUp={handleResizePointerUp}
+				onPointerCancel={handleResizePointerUp}
+				onKeyDown={handleResizeKeyDown}
+			/>
 		</section>
 	);
 };
