@@ -44,20 +44,30 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 		setIsDragging(true);
 	};
 
-	const handleMouseMove = useCallback((e: MouseEvent) => {
-		if (!windowRef.current || !mousePrevPositionRef.current) {
-			return;
-		}
+	const handleMouseMove = useCallback(
+		(e: MouseEvent) => {
+			if (!windowRef.current || !mousePrevPositionRef.current) {
+				return;
+			}
 
-		const deltaX = mousePrevPositionRef.current.x - e.clientX;
-		const deltaY = mousePrevPositionRef.current.y - e.clientY;
-		setPosition((prev) => ({
-			x: Math.max(prev.x - deltaX, 0),
-			y: Math.max(prev.y - deltaY, 0),
-		}));
+			const { width, height } = windowRef.current.getBoundingClientRect();
+			const deltaX = mousePrevPositionRef.current.x - e.clientX;
+			const deltaY = mousePrevPositionRef.current.y - e.clientY;
 
-		mousePrevPositionRef.current = { x: e.clientX, y: e.clientY };
-	}, []);
+			setPosition((prev) => {
+				const newX = prev.x - deltaX;
+				const newY = prev.y - deltaY;
+
+				return {
+					x: Math.max(0, Math.min(newX, screenSizeContext.width - width)),
+					y: Math.max(0, Math.min(newY, screenSizeContext.height - height)),
+				};
+			});
+
+			mousePrevPositionRef.current = { x: e.clientX, y: e.clientY };
+		},
+		[screenSizeContext.width, screenSizeContext.height],
+	);
 
 	const handleMouseUp = useCallback(() => {
 		mousePrevPositionRef.current = null;
@@ -80,26 +90,18 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 		};
 	}, [isDragging, handleMouseMove, handleMouseUp]);
 
-	// Ensure that resizing does not place the window out of bounds.
+	// Ensure that screen resizing does not place the window out of bounds.
 	useEffect(() => {
 		if (!windowRef.current) {
 			return;
 		}
 
-		const { height, width } = windowRef.current.getBoundingClientRect();
-		if (position.x + width > screenSizeContext.width) {
-			setPosition(({ y }) => ({
-				x: Math.min(screenSizeContext.width - width, 0),
-				y,
-			}));
-		}
-		if (position.y + height > screenSizeContext.height) {
-			setPosition(({ x }) => ({
-				x,
-				y: Math.min(screenSizeContext.height - height, 0),
-			}));
-		}
-	}, [position, screenSizeContext]);
+		const { width, height } = windowRef.current.getBoundingClientRect();
+		setPosition((prev) => ({
+			x: Math.max(0, Math.min(prev.x, screenSizeContext.width - width)),
+			y: Math.max(0, Math.min(prev.y, screenSizeContext.height - height)),
+		}));
+	}, [screenSizeContext.width, screenSizeContext.height]);
 
 	return (
 		<section
