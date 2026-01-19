@@ -16,6 +16,7 @@
     font-size: var(--font-size-small);
     background: var(--background-gradient-horizontal);
     padding: var(--spacing-xsmall);
+    user-select: none;
 
     >:last-child {
       margin-left: var(--spacing-xsmall);
