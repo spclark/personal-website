@@ -20,6 +20,10 @@
     user-select: none;
     touch-action: none;
 
+    >:not(:first-child) {
+      flex-shrink: 0;
+    }
+
     >:last-child {
       margin-left: var(--spacing-xsmall);
     }
@@ -28,6 +32,9 @@
       line-height: 1;
       font-size: var(--font-size-medium);
       margin-right: auto;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
 
     .buttonIcon {
