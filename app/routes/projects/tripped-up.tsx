@@ -9,6 +9,7 @@ const TrippedUp = () => (
 			would take you to commute to work by pogo stick, this is the website for
 			you!
 		</p>
+		<br />
 		<p>
 			You can visit the site{' '}
 			<a
