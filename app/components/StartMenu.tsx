@@ -3,6 +3,7 @@ import iconGPS from '~/assets/icons/gps.png';
 import iconInfo from '~/assets/icons/info.png';
 import iconLogOff from '~/assets/icons/log-off.png';
 import iconLogo from '~/assets/icons/logo.png';
+import iconPC from '~/assets/icons/pc.png';
 import iconProjects from '~/assets/icons/projects.png';
 import iconRoutes from '~/assets/icons/routes.png';
 import iconSettings from '~/assets/icons/settings.png';
@@ -141,6 +142,9 @@ const StartMenu: React.FC = () => {
 						</StartMenuItem>
 						<StartMenuItem href={ROUTES.TRIPPED_UP} iconSrc={iconRoutes}>
 							TrippedUp!
+						</StartMenuItem>
+						<StartMenuItem href={ROUTES.PERSONAL_WEBSITE} iconSrc={iconPC}>
+							Personal Website
 						</StartMenuItem>
 					</StartMenuDirectory>
 					<StartMenuDirectory

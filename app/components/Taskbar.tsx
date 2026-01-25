@@ -43,11 +43,11 @@ const Taskbar = () => {
 				<a href={`mailto:${EMAIL}`}>
 					<img src={iconOutlook} alt="" className={styles.shortcutIcon} />
 				</a>
-				<a href={GITHUB_URL} target="_blank" rel="noreferrer">
-					<img src={iconGithub} alt="" className={styles.shortcutIcon} />
-				</a>
 				<a href={LINKEDIN_URL} target="_blank" rel="noreferrer">
 					<img src={iconLinkedIn} alt="" className={styles.shortcutIcon} />
+				</a>
+				<a href={GITHUB_URL} target="_blank" rel="noreferrer">
+					<img src={iconGithub} alt="" className={styles.shortcutIcon} />
 				</a>
 			</div>
 			<Divider />

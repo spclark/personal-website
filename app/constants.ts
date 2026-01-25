@@ -9,6 +9,7 @@ export const ROUTES = {
 	ABOUT: '/about',
 	HOME: '/',
 	NOT_FOUND: '/not-found',
+	PERSONAL_WEBSITE: '/projects/personal-website',
 	PROTEC: '/projects/protec-system-one',
 	TRIPPED_UP: '/projects/tripped-up',
 };
