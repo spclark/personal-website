@@ -11,11 +11,11 @@ const Desktop = ({ children }: { children: React.ReactNode }) => (
 		<DesktopShortcut iconSrc={bin} name="Recycle Bin" />
 		<DesktopShortcut iconSrc={network} name="Network Neighborhood" />
 		<DesktopShortcut
-			href="resume.pdf"
+			href="steven_clark_resume.pdf"
 			target="_blank"
 			rel="noopener"
 			iconSrc={resume}
-			name="Resume.pdf"
+			name="resume.pdf"
 		/>
 		{children}
 	</main>
