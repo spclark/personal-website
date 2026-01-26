@@ -10,6 +10,8 @@ import styles from './Window.module.scss';
 
 const KEYBOARD_MOVE_STEP = 20;
 const KEYBOARD_RESIZE_STEP = 20;
+const DEFAULT_WIDTH = 600;
+const DEFAULT_HEIGHT = 300;
 const MIN_WIDTH = 200;
 const MIN_HEIGHT = 150;
 
@@ -18,21 +20,54 @@ interface Props {
 	children?: React.ReactNode;
 	fill?: 'solid' | 'inset';
 }
+
 const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 	const screenSizeContext = useContext(ScreenSizeContext);
 
-	// By default, position the window at the center of the screen.
-	const [position, setPosition] = useState({
-		x: Math.floor(screenSizeContext.width / 2),
-		y: Math.floor(screenSizeContext.height / 2),
+	const [{ position, size }, setPositionAndSize] = useState({
+		position: { x: 0, y: 0 },
+		size: { width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT },
 	});
-	const [size, setSize] = useState<{
-		width: number | null;
-		height: number | null;
-	}>({
-		width: null,
-		height: null,
-	});
+
+	// Track whether we've done the initial positioning.
+	const isInitializedRef = useRef(false);
+
+	const setPosition = useCallback(
+		(updater: (prev: { x: number; y: number }) => { x: number; y: number }) => {
+			setPositionAndSize((prev) => ({
+				...prev,
+				position: updater(prev.position),
+			}));
+		},
+		[],
+	);
+
+	const setSize = useCallback(
+		(
+			updater: (prev: { width: number; height: number }) => {
+				width: number;
+				height: number;
+			},
+		) => {
+			setPositionAndSize((prev) => ({
+				...prev,
+				size: updater(prev.size),
+			}));
+		},
+		[],
+	);
+
+	const clampSize = useCallback(
+		(width: number, height: number) => {
+			const maxWidth = screenSizeContext.width - position.x;
+			const maxHeight = screenSizeContext.height - position.y;
+			return {
+				width: Math.max(MIN_WIDTH, Math.min(width, maxWidth)),
+				height: Math.max(MIN_HEIGHT, Math.min(height, maxHeight)),
+			};
+		},
+		[screenSizeContext.width, screenSizeContext.height, position.x, position.y],
+	);
 	const [isOpen, setIsOpen] = useState(true);
 	const [isDragging, setIsDragging] = useState(false);
 	const [isResizing, setIsResizing] = useState(false);
@@ -85,7 +120,7 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 
 			pointerPrevPositionRef.current = { x: e.clientX, y: e.clientY };
 		},
-		[clampPosition],
+		[clampPosition, setPosition],
 	);
 
 	const handlePointerUp = useCallback((e: React.PointerEvent) => {
@@ -125,18 +160,6 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 		setPosition((prev) => clampPosition(prev.x + deltaX, prev.y + deltaY));
 	};
 
-	const clampSize = useCallback(
-		(width: number, height: number) => {
-			const maxWidth = screenSizeContext.width - position.x;
-			const maxHeight = screenSizeContext.height - position.y;
-			return {
-				width: Math.max(MIN_WIDTH, Math.min(width, maxWidth)),
-				height: Math.max(MIN_HEIGHT, Math.min(height, maxHeight)),
-			};
-		},
-		[screenSizeContext.width, screenSizeContext.height, position.x, position.y],
-	);
-
 	const handleResizePointerDown = (e: React.PointerEvent) => {
 		if (e.pointerType === 'mouse' && e.button !== 0) {
 			return;
@@ -156,16 +179,11 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 			const deltaX = e.clientX - pointerPrevPositionRef.current.x;
 			const deltaY = e.clientY - pointerPrevPositionRef.current.y;
 
-			setSize((prev) => {
-				const rect = windowRef.current?.getBoundingClientRect();
-				const currentWidth = prev.width ?? rect?.width ?? MIN_WIDTH;
-				const currentHeight = prev.height ?? rect?.height ?? MIN_HEIGHT;
-				return clampSize(currentWidth + deltaX, currentHeight + deltaY);
-			});
+			setSize((prev) => clampSize(prev.width + deltaX, prev.height + deltaY));
 
 			pointerPrevPositionRef.current = { x: e.clientX, y: e.clientY };
 		},
-		[clampSize],
+		[clampSize, setSize],
 	);
 
 	const handleResizePointerUp = useCallback((e: React.PointerEvent) => {
@@ -197,23 +215,58 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 		}
 
 		e.preventDefault();
-		setSize((prev) => {
-			const currentWidth =
-				prev.width ??
-				windowRef.current?.getBoundingClientRect().width ??
-				MIN_WIDTH;
-			const currentHeight =
-				prev.height ??
-				windowRef.current?.getBoundingClientRect().height ??
-				MIN_HEIGHT;
-			return clampSize(currentWidth + deltaWidth, currentHeight + deltaHeight);
-		});
+		setSize((prev) =>
+			clampSize(prev.width + deltaWidth, prev.height + deltaHeight),
+		);
 	};
 
-	// Ensure that screen resizing does not place the window out of bounds.
+	// Handle initial centering and subsequent screen resizes.
 	useEffect(() => {
-		setPosition((prev) => clampPosition(prev.x, prev.y));
-	}, [clampPosition]);
+		// Wait for valid screen dimensions.
+		if (screenSizeContext.width === 0 || screenSizeContext.height === 0) {
+			return;
+		}
+
+		if (!isInitializedRef.current) {
+			// Initial positioning: center the window on screen.
+			isInitializedRef.current = true;
+			const width = Math.min(DEFAULT_WIDTH, screenSizeContext.width);
+			const height = Math.min(DEFAULT_HEIGHT, screenSizeContext.height);
+			setPositionAndSize({
+				position: {
+					x: Math.max(0, Math.floor((screenSizeContext.width - width) / 2)),
+					y: Math.max(0, Math.floor((screenSizeContext.height - height) / 2)),
+				},
+				size: { width, height },
+			});
+		} else {
+			// Screen resize: clamp size first, then position.
+			setPositionAndSize((prev) => {
+				const maxWidth = screenSizeContext.width;
+				const maxHeight = screenSizeContext.height;
+				const newWidth = Math.max(
+					MIN_WIDTH,
+					Math.min(prev.size.width, maxWidth),
+				);
+				const newHeight = Math.max(
+					MIN_HEIGHT,
+					Math.min(prev.size.height, maxHeight),
+				);
+				const newX = Math.max(
+					0,
+					Math.min(prev.position.x, screenSizeContext.width - newWidth),
+				);
+				const newY = Math.max(
+					0,
+					Math.min(prev.position.y, screenSizeContext.height - newHeight),
+				);
+				return {
+					position: { x: newX, y: newY },
+					size: { width: newWidth, height: newHeight },
+				};
+			});
+		}
+	}, [screenSizeContext.width, screenSizeContext.height]);
 
 	return (
 		<section
@@ -223,8 +276,8 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 			style={{
 				top: position.y,
 				left: position.x,
-				width: size.width ?? undefined,
-				height: size.height ?? undefined,
+				width: size.width,
+				height: size.height,
 				cursor: isDragging || isResizing ? 'grabbing' : 'default',
 			}}
 		>
@@ -265,8 +318,8 @@ const Window: React.FC<Props> = ({ title, children, fill = 'inset' }) => {
 				className={styles.resizeHandle}
 				role="slider"
 				aria-label={`Resize ${title} window. Use arrow keys to adjust size.`}
-				aria-valuenow={size.width ?? 0}
-				aria-valuetext={`Size: ${size.width ?? 'auto'} pixels wide, ${size.height ?? 'auto'} pixels tall`}
+				aria-valuenow={size.width}
+				aria-valuetext={`Size: ${size.width} pixels wide, ${size.height} pixels tall`}
 				tabIndex={0}
 				style={{ cursor: isResizing ? 'grabbing' : 'nwse-resize' }}
 				onPointerDown={handleResizePointerDown}
