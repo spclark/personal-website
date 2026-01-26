@@ -6,7 +6,6 @@ import iconLogo from '~/assets/icons/logo.png';
 import iconPC from '~/assets/icons/pc.png';
 import iconProjects from '~/assets/icons/projects.png';
 import iconRoutes from '~/assets/icons/routes.png';
-import iconSettings from '~/assets/icons/settings.png';
 import iconShutDown from '~/assets/icons/shut-down.png';
 import BezeledButton from '~/components/BezeledButton';
 import { ROUTES } from '~/constants';
@@ -145,18 +144,6 @@ const StartMenu: React.FC = () => {
 						</StartMenuItem>
 						<StartMenuItem href={ROUTES.PERSONAL_WEBSITE} iconSrc={iconPC}>
 							Personal Website
-						</StartMenuItem>
-					</StartMenuDirectory>
-					<StartMenuDirectory
-						title={
-							<>
-								<span className={styles.underline}>S</span>ettings
-							</>
-						}
-						iconSrc={iconSettings}
-					>
-						<StartMenuItem href={ROUTES.TRIPPED_UP} iconSrc={iconRoutes}>
-							TrippedUp!
 						</StartMenuItem>
 					</StartMenuDirectory>
 					<StartMenuDivider />

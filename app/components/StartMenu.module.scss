@@ -3,7 +3,7 @@
 
   &>.window {
     display: flex;
-    height: 246px; // 5 48px menu items + 2 2px dividers + 2 1px borders
+    height: 198px; // 5 48px menu items + 2 2px dividers + 2 1px borders
     bottom: 100%;
 
     &[aria-hidden='true'] {
