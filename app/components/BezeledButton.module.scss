@@ -1,0 +1,22 @@
+.bezeledButton {
+  color: var(--color-black);
+  background-color: var(--background-color-window);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--border-color-bezel-raised-deep);
+  padding: 0;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  &:active:not(:disabled),
+  &:focus {
+    border-color: var(--border-color-bezel-sunken-shallow);
+
+    .innerBorder {
+      border: var(--border-dotted);
+    }
+  }
+}

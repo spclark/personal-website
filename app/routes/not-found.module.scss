@@ -1,0 +1,16 @@
+.contentWrapper {
+  text-align: center;
+  padding: var(--spacing-medium);
+
+  .errorMessage {
+    display: flex;
+    align-items: center;
+    column-gap: var(--spacing-large);
+    margin-bottom: var(--spacing-xlarge);
+  }
+
+  .button {
+    display: block;
+    width: 64px;
+  }
+}

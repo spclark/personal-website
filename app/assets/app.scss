@@ -1,0 +1,168 @@
+@font-face {
+  font-family: 'MS Sans Serif';
+  font-weight: 400;
+  font-style: normal;
+  src: url('./fonts/ms-sans-serif/ms-sans-serif.otf.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'MS Sans Serif';
+  font-weight: 700;
+  font-style: normal;
+  src: url('./fonts/ms-sans-serif-bold/ms-sans-serif-bold.otf.woff2') format('woff2');
+}
+
+@layer reset {
+  /*
+    Josh's Custom CSS Reset
+    https://www.joshwcomeau.com/css/custom-css-reset/
+  */
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  *:not(dialog) {
+    margin: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      interpolate-size: allow-keywords;
+    }
+  }
+
+  body {
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    overflow-wrap: break-word;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-wrap: balance;
+  }
+
+  #root,
+  #__next {
+    isolation: isolate;
+  }
+}
+
+:root {
+  // https://en.wikipedia.org/wiki/List_of_software_palettes#Microsoft_Windows_default_20-color_palette
+  --color-black: #000;
+  --color-dark-red: maroon;
+  --color-dark-green: green;
+  --color-dark-yellow: olive;
+  --color-dark-blue: navy;
+  --color-dark-magenta: purple;
+  --color-dark-cyan: teal;
+  --color-light-grey: silver;
+  --color-money-green: #c0dcc0;
+  --color-sky-blue: #a6caf0;
+  --color-cream: #fffbf0;
+  --color-medium-grey: #a0a0a4;
+  --color-dark-grey: gray;
+  --color-red: #f00;
+  --color-green: #0f0;
+  --color-yellow: #ff0;
+  --color-blue: #00f;
+  --color-magenta: #f0f;
+  --color-cyan: #0ff;
+  --color-white: #fff;
+
+  --background-color-monitor-face: #fcfaef;
+  --background-color-monitor-indent-top: #c0bfb7;
+  --background-color-monitor-indent-sides: #d3d1c9;
+  --background-color-monitor-indent-bottom: #f3f1e8;
+  --background-color-window: var(--color-light-grey);
+
+  --background-gradient-horizontal: linear-gradient(90deg, var(--color-dark-blue) 0%, rgb(16,132,208) 100%);
+  --background-gradient-vertical: linear-gradient(0deg, var(--color-dark-blue) 0%, var(--color-blue) 12%, var(--color-dark-blue) 24%, var(--color-dark-blue) 100%);
+
+  --border-color-bezel-raised-deep: var(--color-white) var(--color-black) var(--color-black) var(--color-white);
+  --border-color-bezel-raised-shallow: var(--color-white) var(--color-dark-grey) var(--color-dark-grey) var(--color-white);
+  --border-color-bezel-sunken-deep: var(--color-black) var(--color-white) var(--color-white) var(--color-black);
+  --border-color-bezel-sunken-shallow: var(--color-dark-grey) var(--color-white) var(--color-white) var(--color-dark-grey);
+
+  --border-dotted: 1px dotted var(--color-black);
+  --border-dashed: 1px dashed var(--color-dark-grey);
+
+  --font-size-small: 12px;
+  --font-size-medium: 16px;
+  --font-size-large: 20px;
+
+  --spacing-xsmall: 2px;
+  --spacing-small: 4px;
+  --spacing-medium: 8px;
+  --spacing-large: 16px;
+  --spacing-xlarge: 32px;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background-color: var(--background-color-monitor-face);
+  font-family: 'MS Sans Serif', sans-serif;
+  font-size: var(--font-size-medium);
+}
+
+/*
+  Utility Classes
+*/
+
+._display-contents {
+  display: contents;
+}
+
+._sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

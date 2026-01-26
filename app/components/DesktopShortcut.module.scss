@@ -1,0 +1,24 @@
+.desktopShortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--spacing-small);
+  width: 80px;
+  height: 80px;
+  padding: var(--spacing-small) var(--spacing-small);
+  font-size: var(--font-size-small);
+  color: var(--color-white);
+  text-align: center;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:focus {
+    border: var(--border-dashed);
+  }
+
+  .icon {
+    width: 32px;
+    height: 32px;
+  }
+}

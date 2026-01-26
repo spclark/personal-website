@@ -1,0 +1,61 @@
+.taskbar {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  background-color: var(--background-color-window);
+  border-top: solid 1px var(--color-white);
+  padding: var(--spacing-xsmall);
+
+  .divider {
+    width: 1px;
+    background-color: var(--color-dark-grey);
+    border-right: solid 1px var(--color-white);
+    margin: 0 var(--spacing-small);
+    align-self: stretch;
+    box-sizing: content-box;
+  }
+
+  .shortcuts,
+  .tabs {
+    display: flex;
+    align-items: center;
+    column-gap: var(--spacing-small);
+    padding-right: var(--spacing-small);
+
+    &::before {
+      content: '';
+      width: 3px;
+      height: calc(100% - var(--spacing-small));
+      border-width: 1px;
+      border-style: solid;
+      border-color: var(--border-color-bezel-raised-shallow);
+      margin-right: var(--spacing-small);
+    }
+  }
+
+  .shortcuts {
+    .shortcutIcon {
+      height: 16px;
+      width: 16px;
+    }
+  }
+
+  .tabs {
+    flex: 1;
+  }
+
+  .clock {
+    position: relative;
+    display: flex;
+    align-items: center;
+    column-gap: var(--spacing-large);
+    padding: var(--spacing-xsmall);
+    padding-right: var(--spacing-large);
+    font-size: var(--font-size-small);
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--border-color-bezel-sunken-shallow);
+    margin-left: auto;
+  }
+}
